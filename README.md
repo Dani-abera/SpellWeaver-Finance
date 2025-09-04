@@ -51,7 +51,7 @@ SpellWeaver Finance is a magical financial management app that gamifies personal
 
 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/spellweaver_finance.git
+git clone https://github.com/Dani-abera/SpellWeaver-Finance.git
 cd spellweaver_finance
 ```
 

@@ -1,0 +1,391 @@
+===============================================
+    SPELLWEAVER FINANCE - DATABASE SCHEMA
+===============================================
+
+DATABASE: spellweaver_finance.db
+VERSION: 1.0
+CREATED: 2025-09-04
+
+===============================================
+TABLE DEFINITIONS
+===============================================
+
+1. ACCOUNTS TABLE
+-----------------
+CREATE TABLE accounts (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    account_type TEXT NOT NULL,
+    balance REAL NOT NULL DEFAULT 0.0,
+    currency TEXT NOT NULL DEFAULT 'USD',
+    magical_theme TEXT NOT NULL DEFAULT 'crystal_vault',
+    theme_color TEXT NOT NULL DEFAULT '#6366f1',
+    icon_path TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    is_active INTEGER NOT NULL DEFAULT 1
+);
+
+Account Types: 'checking', 'savings', 'credit_card', 'investment', 'cash'
+Magical Themes: 'crystal_vault', 'shadow_purse', 'starlight_savings', 'golden_treasury', 'mystic_wallet'
+
+2. CATEGORIES TABLE
+-------------------
+CREATE TABLE categories (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    icon_name TEXT NOT NULL,
+    color TEXT NOT NULL,
+    category_type TEXT NOT NULL,
+    magical_name TEXT NOT NULL,
+    parent_category_id TEXT,
+    is_default INTEGER NOT NULL DEFAULT 0,
+    created_at INTEGER NOT NULL,
+    FOREIGN KEY (parent_category_id) REFERENCES categories (id)
+);
+
+Category Types: 'income', 'expense'
+Example Magical Names: 'Potion Ingredients', 'Spell Components', 'Tavern Visits', 'Crystal Mining'
+
+3. TRANSACTIONS TABLE
+---------------------
+CREATE TABLE transactions (
+    id TEXT PRIMARY KEY,
+    account_id TEXT NOT NULL,
+    category_id TEXT NOT NULL,
+    amount REAL NOT NULL,
+    description TEXT,
+    transaction_type TEXT NOT NULL,
+    date INTEGER NOT NULL,
+    location TEXT,
+    notes TEXT,
+    is_recurring INTEGER NOT NULL DEFAULT 0,
+    recurring_pattern TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    FOREIGN KEY (account_id) REFERENCES accounts (id),
+    FOREIGN KEY (category_id) REFERENCES categories (id)
+);
+
+Transaction Types: 'income', 'expense', 'transfer'
+Recurring Patterns: 'daily', 'weekly', 'monthly', 'yearly'
+
+4. BUDGETS TABLE
+----------------
+CREATE TABLE budgets (
+    id TEXT PRIMARY KEY,
+    category_id TEXT NOT NULL,
+    limit_amount REAL NOT NULL,
+    spent_amount REAL NOT NULL DEFAULT 0.0,
+    period_type TEXT NOT NULL,
+    period_start INTEGER NOT NULL,
+    period_end INTEGER NOT NULL,
+    alert_threshold REAL NOT NULL DEFAULT 0.8,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    FOREIGN KEY (category_id) REFERENCES categories (id)
+);
+
+Period Types: 'weekly', 'monthly', 'quarterly', 'yearly'
+
+5. RECURRING_TRANSACTIONS TABLE
+-------------------------------
+CREATE TABLE recurring_transactions (
+    id TEXT PRIMARY KEY,
+    account_id TEXT NOT NULL,
+    category_id TEXT NOT NULL,
+    amount REAL NOT NULL,
+    description TEXT NOT NULL,
+    transaction_type TEXT NOT NULL,
+    frequency TEXT NOT NULL,
+    start_date INTEGER NOT NULL,
+    end_date INTEGER,
+    last_executed INTEGER,
+    next_execution INTEGER NOT NULL,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL,
+    FOREIGN KEY (account_id) REFERENCES accounts (id),
+    FOREIGN KEY (category_id) REFERENCES categories (id)
+);
+
+Frequency: 'daily', 'weekly', 'bi_weekly', 'monthly', 'quarterly', 'yearly'
+
+6. ACHIEVEMENTS TABLE
+---------------------
+CREATE TABLE achievements (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    icon_name TEXT NOT NULL,
+    achievement_type TEXT NOT NULL,
+    target_value REAL,
+    current_value REAL NOT NULL DEFAULT 0.0,
+    is_unlocked INTEGER NOT NULL DEFAULT 0,
+    unlocked_at INTEGER,
+    magical_reward TEXT,
+    created_at INTEGER NOT NULL
+);
+
+Achievement Types: 'savings_milestone', 'transaction_count', 'budget_keeper', 'category_master'
+
+7. SETTINGS TABLE
+-----------------
+CREATE TABLE settings (
+    id TEXT PRIMARY KEY,
+    setting_key TEXT NOT NULL UNIQUE,
+    setting_value TEXT NOT NULL,
+    setting_type TEXT NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+Setting Types: 'string', 'integer', 'boolean', 'json'
+Example Keys: 'default_currency', 'theme_mode', 'enable_particles', 'backup_frequency'
+
+===============================================
+INDEXES FOR PERFORMANCE
+===============================================
+
+CREATE INDEX idx_transactions_account_id ON transactions(account_id);
+CREATE INDEX idx_transactions_category_id ON transactions(category_id);
+CREATE INDEX idx_transactions_date ON transactions(date);
+CREATE INDEX idx_transactions_type ON transactions(transaction_type);
+CREATE INDEX idx_budgets_category_id ON budgets(category_id);
+CREATE INDEX idx_budgets_period ON budgets(period_start, period_end);
+CREATE INDEX idx_recurring_next_execution ON recurring_transactions(next_execution);
+CREATE INDEX idx_accounts_active ON accounts(is_active);
+
+===============================================
+INITIAL DATA SEEDS
+===============================================
+
+DEFAULT CATEGORIES:
+- Income: Salary (Crystal Mining), Freelance (Spell Casting), Investment (Potion Sales)
+- Expense: Food (Tavern Visits), Transport (Flying Carpet), Shopping (Magical Supplies)
+- Housing (Castle Maintenance), Utilities (Mana Bills), Entertainment (Dragon Shows)
+
+DEFAULT MAGICAL THEMES:
+- Crystal Vault: #6366f1 (Indigo)
+- Shadow Purse: #8b5cf6 (Purple)
+- Starlight Savings: #06b6d4 (Cyan)
+- Golden Treasury: #f59e0b (Amber)
+- Mystic Wallet: #ec4899 (Pink)
+
+DEFAULT SETTINGS:
+- default_currency: 'USD'
+- theme_mode: 'dark'
+- enable_particles: 'true'
+- enable_haptics: 'true'
+- backup_frequency: 'weekly'
+
+===============================================
+DATABASE VERSION MANAGEMENT
+===============================================
+
+Version 1.0: Initial schema with all core tables
+Future versions will include migration scripts for:
+- Adding new magical themes
+- Extended achievement system
+- Advanced analytics tables
+- Multi-currency support enhancement
+
+===============================================
+NOTES
+===============================================
+
+- All dates stored as INTEGER (Unix timestamp in milliseconds)
+- Boolean values stored as INTEGER (0 = false, 1 = true)
+- Colors stored as HEX strings (e.g., '#6366f1')
+- UUIDs used for all primary keys
+- Soft deletes implemented where appropriate (is_active flag)
+- Foreign key constraints enabled for data integrity
+
+
+===============================================
+===============================================
+===============================================
+
+name: spellweaver_finance
+description: "A magical financial management app that transforms mundane money tracking into an enchanting cosmic experience"
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.2.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_bloc: ^8.1.3
+
+  # Database
+  sqflite: ^2.3.0
+  path: ^1.8.3
+
+  # Utilities
+  intl: ^0.18.1
+  uuid: ^4.1.0
+  shared_preferences: ^2.2.2
+
+  # Charts & Visualizations
+  fl_chart: ^0.64.0
+
+  # Animations
+  lottie: ^2.7.0
+  particles_flutter: ^0.1.4
+
+  # UI Components
+  flutter_staggered_animations: ^1.1.1
+  shimmer: ^3.0.0
+
+  # Icons
+  cupertino_icons: ^1.0.2
+  flutter_svg: ^2.0.9
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/animations/
+    - assets/particles/
+
+  fonts:
+    - family: MagicalFont
+      fonts:
+        - asset: assets/fonts/magical_regular.ttf
+        - asset: assets/fonts/magical_bold.ttf
+          weight: 700
+
+===============================================
+===============================================
+
+Database Helper - database_helper.dart
+===============================================
+===============================================
+
+import 'dart:async';
+import 'package:sqflite/sqflite.dart';
+import 'package:path/path.dart';
+import '../constants/database_constants.dart';
+
+class DatabaseHelper {
+  static final DatabaseHelper _instance = DatabaseHelper._internal();
+  static Database? _database;
+
+  factory DatabaseHelper() => _instance;
+  DatabaseHelper._internal();
+
+  Future<Database> get database async {
+    _database ??= await initDatabase();
+    return _database!;
+  }
+
+  Future<Database> initDatabase() async {
+    String path = join(await getDatabasesPath(), DatabaseConstants.databaseName);
+
+    return await openDatabase(
+      path,
+      version: DatabaseConstants.databaseVersion,
+      onCreate: _createDatabase,
+      onUpgrade: _upgradeDatabase,
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
+      },
+    );
+  }
+
+  Future<void> _createDatabase(Database db, int version) async {
+    await _createTables(db);
+    await _insertDefaultData(db);
+  }
+
+  Future<void> _upgradeDatabase(Database db, int oldVersion, int newVersion) async {
+    // Handle database migrations here
+    if (oldVersion < newVersion) {
+      // Add migration logic for future versions
+    }
+  }
+
+  Future<void> _createTables(Database db) async {
+    // Create Accounts Table
+    await db.execute('''
+      CREATE TABLE ${DatabaseConstants.accountsTable} (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        account_type TEXT NOT NULL,
+        balance REAL NOT NULL DEFAULT 0.0,
+        currency TEXT NOT NULL DEFAULT 'USD',
+        magical_theme TEXT NOT NULL DEFAULT 'crystal_vault',
+        theme_color TEXT NOT NULL DEFAULT '#6366f1',
+        icon_path TEXT,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        is_active INTEGER NOT NULL DEFAULT 1
+      )
+    ''');
+
+    // Create Categories Table
+    await db.execute('''
+      CREATE TABLE ${DatabaseConstants.categoriesTable} (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        icon_name TEXT NOT NULL,
+        color TEXT NOT NULL,
+        category_type TEXT NOT NULL,
+        magical_name TEXT NOT NULL,
+        parent_category_id TEXT,
+        is_default INTEGER NOT NULL DEFAULT 0,
+        created_at INTEGER NOT NULL,
+        FOREIGN KEY (parent_category_id) REFERENCES ${DatabaseConstants.categoriesTable} (id)
+      )
+    ''');
+
+    // Create Transactions Table
+    await db.execute('''
+      CREATE TABLE ${DatabaseConstants.transactionsTable} (
+        id TEXT PRIMARY KEY,
+        account_id TEXT NOT NULL,
+        category_id TEXT NOT NULL,
+        amount REAL NOT NULL,
+        description TEXT,
+        transaction_type TEXT NOT NULL,
+        date INTEGER NOT NULL,
+        location TEXT,
+        notes TEXT,
+        is_recurring INTEGER NOT NULL DEFAULT 0,
+        recurring_pattern TEXT,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+        FOREIGN KEY (account_id) REFERENCES ${DatabaseConstants.accountsTable} (id),
+        FOREIGN KEY (category_id) REFERENCES ${DatabaseConstants.categoriesTable} (id)
+      )
+    ''');
+
+    // Create Budgets Table
+    await db.execute('''
+      CREATE TABLE ${DatabaseConstants.budgetsTable} (
+        id TEXT PRIMARY KEY,
+        category_id TEXT NOT NULL,
+        limit_amount REAL NOT NULL,
+        spent_amount REAL NOT NULL DEFAULT 0.0,
+        period_type TEXT NOT NULL,
+        period_start INTEGER NOT NULL,
+        period_end INTEGER NOT NULL,
+        alert_threshold REAL NOT NULL DEFAULT 0.8,
+        is_active INTEGER NOT NULL DEFAULT 1,
+        created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL,
+
+===============================================
+===============================================

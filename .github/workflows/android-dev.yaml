@@ -33,9 +33,6 @@ jobs:
       - name: Accept Android Licenses
         run: yes | sdkmanager --licenses || true
 
-      - name: Make gradlew executable
-        run: chmod +x android/gradlew
-
       - name: check flutter doctor
         run: flutter doctor -v
 

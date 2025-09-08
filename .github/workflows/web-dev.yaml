@@ -36,9 +36,22 @@ jobs:
       - name: Build flutter Web app
         run: flutter build web --release
 
-      - name: Upload APK artifact
+      - name: Upload Web App artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release.apk
           path: build/web
 
+      - name: upload to github
+        run: |
+          cd build/web
+          git add .
+          git commit -m 'upload'
+          git remote add origin https://github.com/Dani-abera/Dani-abera.github.io.git
+          git push -u origin main --force
+          
+  
+
+#  git remote add origin https://github.com/Dani-abera/Dani-abera.github.io.git
+#  git branch -M main
+#  git push -u origin main
